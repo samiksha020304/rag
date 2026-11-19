@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.env
+documents/
+qdrant_data/
+index_state.json
+graph.json
+ocr_cache/
+users.json

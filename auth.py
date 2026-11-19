@@ -12,12 +12,26 @@ def hash_password(password, salt_hex):
     ).hex()
 
 
+def _load_users():
+    """Users from Streamlit Secrets (cloud) if set, otherwise from users.json (your laptop)."""
+    try:
+        import streamlit as st
+        raw = st.secrets.get("USERS_JSON")
+        if raw:
+            return json.loads(raw)
+    except Exception:
+        pass
+    if os.path.exists(USERS_FILE):
+        with open(USERS_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+
 def check_login(username, password):
     """Returns {"name", "groups", "admin"} if the login is right, otherwise None."""
-    if not os.path.exists(USERS_FILE):
+    users = _load_users()
+    if not users:
         return None
-    with open(USERS_FILE, encoding="utf-8") as f:
-        users = json.load(f)
     name = (username or "").strip().lower()
     user = users.get(name)
     candidate = hash_password(password or "", user["salt"] if user else "00" * 16)
